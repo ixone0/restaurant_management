@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #eef2f3;
+  color: #444;
+  line-height: 1.6;
+}
+
+h2, h3 {
+  color: #007bff;
+  text-align: center;
+}
+
+.menu-item {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 10px;
+  background-color: #ffffff;
+  transition: box-shadow 0.3s ease;
+}
+
+.menu-item:hover {
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+}
+
+.menu-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.menu-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 15px;
+  width: calc(33% - 30px);
+  background-color: #ffffff;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.menu-card:hover {
+  transform: scale(1.03);
+}
+
+.menu-card img {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.cart-item h4 {
+  margin: 0;
+  font-weight: bold;
+}
+
+.cart-item p {
+  margin: 0;
+  color: #777;
+}
+
+.cart-item button {
+  background-color: #dc3545;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cart-item button:hover {
+  background-color: #c82333;
+}
+
+.confirm-button {
+  background-color: #28a745;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s;
+}
+
+.confirm-button:hover {
+  background-color: #218838;
+}
+
+/* ตกแต่งหน้าล็อกอิน */
+.login-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto; /* ใช้ auto เพื่อจัดกลาง */
+  max-width: 400px; /* จำกัดความกว้างสูงสุด */
+}
+
+.login-container input {
+  width: 100%; /* ให้กว้าง 100% ของ container */
+  padding: 12px; /* เพิ่ม padding */
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* เพื่อให้ padding และ border ไม่ทำให้กว้างเกินไป */
+}
+
+/* ตกแต่งหน้าจัดการ Admin */
+.admin-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto; /* ใช้ auto เพื่อจัดกลาง */
+  max-width: 600px; /* จำกัดความกว้างสูงสุด */
+}
+
+.admin-container input,
+.admin-container select {
+  width: 100%; /* ให้กว้าง 100% ของ container */
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* เพื่อให้ padding ไม่ทำให้กว้างเกินไป */
+}
+
+/* Media Queries สำหรับทำให้ responsive */
+@media (max-width: 768px) {
+  .menu-card {
+      width: calc(50% - 20px);
+      margin: 10px auto;
+  }
+
+  .menu-container {
+      justify-content: center;
+  }
+
+  h2, h3 {
+      font-size: 1.5em;
+  }
+
+  .login-container,
+  .admin-container {
+      margin: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  h2, h3 {
+      font-size: 1.3em;
+  }
+
+  .button {
+      width: 100%;
+      padding: 14px;
+  }
+}

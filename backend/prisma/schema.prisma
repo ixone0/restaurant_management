@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // สามารถปรับเป็น MySQL หรือ SQLite ได้ตามต้องการ
+  url      = env("DB_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String?
+  role      Role
+  orders    Order[]
+}
+
+model Order {
+  id         Int          @id @default(autoincrement())
+  userId     Int?        
+  tableId    Int
+  items      OrderItem[]  // เปลี่ยนจาก Menu[] เป็น OrderItem[]
+  totalPrice Float
+  status     OrderStatus
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  user       User?        @relation(fields: [userId], references: [id])
+  table      Table        @relation(fields: [tableId], references: [id])
+}
+
+model OrderItem {
+  id       Int   @id @default(autoincrement())
+  orderId  Int
+  menuId   Int
+  quantity Int   @default(1)
+  order    Order @relation(fields: [orderId], references: [id])
+  menu     Menu  @relation(fields: [menuId], references: [id])
+}
+
+model Menu {
+  id          Int      @id @default(autoincrement())
+  name        String   // ชื่อเมนู
+  description String?  // รายละเอียดของเมนู
+  price       Float    // ราคา
+  category    String?  
+  available   Boolean  @default(true)
+  imageUrl    String?  
+  orderItems  OrderItem[] // แทนที่จะเชื่อมกับ Order[]
+}
+
+model Kitchen {
+  id       Int       @id @default(autoincrement())
+  name     String    // ชื่อพนักงานครัว
+  password String     // รหัสผ่านสำหรับเข้าสู่ระบบ
+}
+
+model Cashier {
+  id       Int       @id @default(autoincrement())
+  name     String    // ชื่อพนักงานแคชเชียร์
+  password String     // รหัสผ่านสำหรับเข้าสู่ระบบ 
+}
+
+model Table { // โมเดลสำหรับโต๊ะ
+  id         Int       @id @default(autoincrement())
+  number     String     @unique
+  status     TableStatus
+  orders     Order[]   
+}
+
+enum Role {
+  CUSTOMER
+  CHEF
+  CASHIER
+}
+
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TableStatus { // สถานะของโต๊ะ
+  AVAILABLE
+  OCCUPIED
+}
