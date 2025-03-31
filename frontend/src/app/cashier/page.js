@@ -4,11 +4,11 @@ import React, { useEffect, useState } from 'react';
 
 const Cashier = () => {
     const [completedOrders, setCompletedOrders] = useState([]);
-    
+
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/kitchen'); // เปลี่ยนเป็น API ที่คุณใช้
+                const response = await fetch('http://localhost:5000/api/kitchen'); // Update API as needed
                 const data = await response.json();
                 setCompletedOrders(data);
             } catch (error) {
@@ -31,6 +31,8 @@ const Cashier = () => {
                 setCompletedOrders((prevOrders) =>
                     prevOrders.map(order => (order.id === orderId ? updatedOrder : order))
                 );
+            } else {
+                console.error("Failed to update order status");
             }
         } catch (error) {
             console.error('Error updating order status:', error);
@@ -54,16 +56,40 @@ const Cashier = () => {
         }
     };
 
-    // จัดกลุ่มออเดอร์ตามโต๊ะเดียวกัน และรวมจำนวนอาหารที่เหมือนกัน ยกเว้นออเดอร์ที่ถูกยกเลิก
+    const handlePayment = async (tableNumber) => {
+        // Confirm payment for the table
+        const confirmed = window.confirm(`Confirm payment for Table ${tableNumber}?`);
+        if (confirmed) {
+            try {
+                // Call your backend API to process the payment (mocking payment success)
+                const response = await fetch('http://localhost:5000/api/cashier/payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tableNumber }),
+                });
+
+                if (response.ok) {
+                    alert(`Payment confirmed for Table ${tableNumber}`);
+                    // Optionally: mark the order as paid or update status after payment
+                } else {
+                    alert('Payment failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error during payment:', error);
+                alert('Payment failed. Please try again.');
+            }
+        }
+    };
+
     const groupedOrders = completedOrders.reduce((acc, order) => {
         if (order.status === 'CANCELLED') return acc;
-        
+
         const tableNumber = order.table?.number || 'Unknown';
         if (!acc[tableNumber]) {
             acc[tableNumber] = { tableNumber, totalPrice: 0, items: {} };
         }
         acc[tableNumber].totalPrice += order.totalPrice;
-        
+
         order.items.forEach(item => {
             const itemName = item.menu.name || 'Unknown';
             if (!acc[tableNumber].items[itemName]) {
@@ -75,7 +101,6 @@ const Cashier = () => {
         return acc;
     }, {});
 
-    // แยกออเดอร์ที่ถูกยกเลิก
     const cancelledOrders = completedOrders.filter(order => order.status === 'CANCELLED');
 
     return (
@@ -90,25 +115,38 @@ const Cashier = () => {
                             <p className="font-semibold">Items:</p>
                             <ul className="ml-4 list-disc">
                                 {Object.entries(group.items).map(([name, quantity], index) => (
-                                    <li key={index}>{name} x {quantity}</li>
+                                    <li key={index}>
+                                        {name} x {quantity}
+                                    </li>
                                 ))}
                             </ul>
                             {cancelledOrders.length > 0 && (
-                                <ul className="ml-4 list-disc">
+                                <ul className="ml-4 list-disc mt-2 text-red-500">
                                     {cancelledOrders.map((order, index) => (
                                         <li key={index}>
-                                            {order.items.map(item => `${item.menu.name} x ${item.quantity} (CALCELLED)`).join(', ')}
+                                            {order.items.map(item => (
+                                                <span key={item.menu.name}>
+                                                    {item.menu.name} x {item.quantity} (CANCELLED)
+                                                </span>
+                                            ))}
                                         </li>
                                     ))}
                                 </ul>
                             )}
                         </div>
+                        <div className="mt-4">
+                            {group.tableNumber !== 'Unknown' && (
+                                <button 
+                                    onClick={() => handlePayment(group.tableNumber)} 
+                                    className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+                                >
+                                    Confirm Payment
+                                </button>
+                            )}
+                        </div>
                     </div>
                 ))}
             </div>
-
-            {/* เมนูที่ถูกยกเลิกจะอยู่ในบล็อกเดียวกัน */}
-            
         </div>
     );
 };

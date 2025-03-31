@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 const Customer = () => {
     const [menu, setMenu] = useState([]);
     const [cart, setCart] = useState([]);
+    const [paymentStatus, setPaymentStatus] = useState(null);  // เพิ่มสถานะการชำระเงิน
     const searchParams = useSearchParams();
     const tableId = searchParams.get("tableId");
 
@@ -22,18 +23,20 @@ const Customer = () => {
     }, []);
 
     const addToCart = (item) => {
-        setCart((prevCart) => {
-            const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
-            if (existingItem) {
-                return prevCart.map((cartItem) =>
-                    cartItem.id === item.id
-                        ? { ...cartItem, quantity: cartItem.quantity + 1 }
-                        : cartItem
-                );
-            } else {
-                return [...prevCart, { ...item, quantity: 1 }];
-            }
-        });
+        if (item.available) {
+            setCart((prevCart) => {
+                const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
+                if (existingItem) {
+                    return prevCart.map((cartItem) =>
+                        cartItem.id === item.id
+                            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+                            : cartItem
+                    );
+                } else {
+                    return [...prevCart, { ...item, quantity: 1 }];
+                }
+            });
+        }
     };
 
     const removeFromCart = (itemToRemove) => {
@@ -57,6 +60,7 @@ const Customer = () => {
                     price: item.price,
                     quantity: item.quantity,
                 })),
+                paymentStatus, // ส่งสถานะการชำระเงิน
             }),
         })
             .then((response) => {
@@ -68,6 +72,7 @@ const Customer = () => {
             .then((data) => {
                 console.log("Order Response:", data);
                 setCart([]);
+                setPaymentStatus('Pending');  // ตั้งสถานะการชำระเงินหลังจากการสั่งซื้อ
             })
             .catch((error) => console.error("Error during checkout:", error));
     };
@@ -93,12 +98,17 @@ const Customer = () => {
                                 <h3 className="text-lg font-semibold">{item.name}</h3>
                                 <p className="text-sm text-gray-600">{item.description || "No description"}</p>
                                 <p className="font-bold text-blue-600">Price: ${item.price}</p>
-                                <button
-                                    className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
-                                    onClick={() => addToCart(item)}
-                                >
-                                    Add to Cart
-                                </button>
+                                
+                                {item.available ? (
+                                    <button
+                                        className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+                                        onClick={() => addToCart(item)}
+                                    >
+                                        Add to Cart
+                                    </button>
+                                ) : (
+                                    <div className="mt-2 text-red-500 font-bold">Out of Stock</div> // กรณีที่ไม่สามารถเลือกเมนูได้
+                                )}
                             </div>
                         ))
                     ) : (
@@ -140,6 +150,12 @@ const Customer = () => {
                     >
                         Confirm Order
                     </button>
+                )}
+                
+                {paymentStatus && (
+                    <div className="mt-4 text-center">
+                        <p className="font-semibold text-lg">Payment Status: {paymentStatus}</p>
+                    </div>
                 )}
             </div>
         </div>
