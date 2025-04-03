@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Head from 'next/head';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -35,6 +36,9 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <Head>
+        <title>Login</title>
+      </Head>
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center text-gray-700">Login</h2>
         {error && <p className="mt-2 text-center text-red-500">{error}</p>}

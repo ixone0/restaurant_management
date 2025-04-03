@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
 
-const Kitchen = () => {
+const CompletedOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -12,22 +12,18 @@ const Kitchen = () => {
     fetch('http://localhost:5000/api/kitchen')
       .then((response) => response.json())
       .then((data) => {
-        setOrders(data);
+        // Filter to get only completed orders
+        const completedOrders = data.filter(order => order.status === 'COMPLETED');
+        setOrders(completedOrders);
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Error fetching orders:', error);
+        console.error('Error fetching completed orders:', error);
         setLoading(false);
       });
   }, []);
 
   const updateOrderStatus = async (orderId, newStatus) => {
-    // Confirm before updating to COMPLETED
-    if (newStatus === 'COMPLETED') {
-      const confirmed = window.confirm('Are you sure you want to mark this order as completed?');
-      if (!confirmed) return;
-    }
-
     try {
       const response = await fetch(`http://localhost:5000/api/kitchen/${orderId}`, {
         method: 'PUT',
@@ -52,43 +48,21 @@ const Kitchen = () => {
     }
   };
 
-  const deleteOrder = async (orderId) => {
-  const confirmed = window.confirm('Are you sure you want to delete this order?');
-  if (!confirmed) return;
-
-  try {
-    const response = await fetch(`http://localhost:5000/api/kitchen/${orderId}`, {
-      method: 'DELETE',
-    });
-
-    if (response.ok) {
-      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId));
-    } else {
-      console.error('Failed to delete order');
-    }
-  } catch (error) {
-    console.error('Error deleting order:', error);
-  }
-};
-
-  if (loading) return <p className="text-center text-lg">Loading orders...</p>;
-
-  // Filter out completed orders
-  const pendingOrders = orders.filter(order => order.status !== 'COMPLETED');
+  if (loading) return <p className="text-center text-lg">Loading completed orders...</p>;
 
   return (
     <div className="container mx-auto p-6">
       <h2 className="text-center font-bold text-2xl text-blue-500 mb-6 mt-8">
-        Orders Awaiting Preparation
+        Completed Orders
       </h2>
       <button
-        onClick={() => router.push("/CompletedOrders")}
+        onClick={() => router.push("/kitchen")}
         className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mb-4"
       >
-        Completed Orders
+        Back to Kitchen Orders
       </button>
       <div>
-        {pendingOrders.map((order) => (
+        {orders.map((order) => (
           <div key={order.id} className="mb-4 p-4 border border-gray-300 rounded-lg shadow-md bg-white">
             <p className="font-bold">Table Number: {order.table?.number || 'Unknown'}</p>
             <p>Order ID: {order.id} - Total: ฿{order.totalPrice} - Status: {order.status}</p>
@@ -118,12 +92,6 @@ const Kitchen = () => {
                   </button>
                 ))}
               </div>
-              <button
-                className="ml-auto bg-red-600 text-white py-2 px-4 rounded focus:outline-none cursor-pointer hover:bg-red-700 active:bg-red-800 transition duration-200"
-                onClick={() => deleteOrder(order.id)}
-              >
-                Delete
-              </button>
             </div>
           </div>
         ))}
@@ -132,4 +100,4 @@ const Kitchen = () => {
   );
 };
 
-export default Kitchen;
+export default CompletedOrders;

@@ -1,4 +1,3 @@
-// src/controllers/kitchenController.js
 const { prisma } = require('../config/database');
 
 const getKitchens = async (req, res) => {
@@ -21,7 +20,6 @@ const getKitchens = async (req, res) => {
   }
 };
 
-
 const updateOrderStatus = async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
@@ -40,11 +38,16 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-
 const deleteOrder = async (req, res) => {
   const { orderId } = req.params;
 
   try {
+    // Delete OrderItems associated with the Order
+    await prisma.orderItem.deleteMany({
+      where: { orderId: parseInt(orderId) },
+    });
+
+    // Then delete the Order
     await prisma.order.delete({
       where: { id: parseInt(orderId) },
     });
@@ -57,4 +60,3 @@ const deleteOrder = async (req, res) => {
 };
 
 module.exports = { getKitchens, updateOrderStatus, deleteOrder };
-

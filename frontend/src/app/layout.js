@@ -12,7 +12,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Restaurant",
+  title: {
+    template: '%s | Restaurant',
+    default: 'Restaurant', 
+  },
   description: "by Thrinadech Pittirawipas",
   icons: {
     icon: "/favicon.png",
