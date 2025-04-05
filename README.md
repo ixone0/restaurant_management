@@ -19,21 +19,21 @@ This project consists of a frontend built with Next.js and a backend using Expre
    ```bash
    git clone <repository-url>
    cd <repository-directory>
-Navigate to the frontend directory and install dependencies:
+2. Navigate to the frontend directory and install dependencies:
     ```bash
     cd frontend
     npm install
-Navigate to the backend directory and install dependencies:
+3. Navigate to the backend directory and install dependencies:
     ```bash
     cd backend
     npm install
 
 ## Usage
-To start the development server for the frontend:
+4. To start the development server for the frontend:
     ```bash
     cd frontend
     npm run dev
-To start the backend server, use:
+5. To start the backend server, use:
     ```bash
     cd backend/src
     node server.js
@@ -65,7 +65,7 @@ Bcrypt: For hashing passwords.
 Prisma: An ORM for database interactions.
 
 ## Environment Variables
-Create a .env file in the backend directory with the following variables:
+6. Create a .env file in the backend directory with the following variables:
     ```bash
     DB_URL="your_database_url"
     PORT=5000
