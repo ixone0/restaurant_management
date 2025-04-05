@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Project Title
 
-## Getting Started
+## Description
 
-First, run the development server:
+This project consists of a frontend built with Next.js and a backend using Express.js. It provides a simple interface for managing employees with authentication and role management.
 
-```bash
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Scripts](#scripts)
+- [Frontend Dependencies](#frontend-dependencies)
+- [Backend Dependencies](#backend-dependencies)
+- [Environment Variables](#environment-variables)
+- [License](#license)
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+Navigate to the frontend directory and install dependencies:
+cd frontend
+npm install
+
+Navigate to the backend directory and install dependencies:
+cd ../backend
+npm install
+
+To start the development server for the frontend:
+cd frontend
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To start the backend server, use:
+cd backend\src
+node server.js
+Make sure to run the backend server before accessing the frontend.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Scripts
+Frontend Scripts
+dev: Starts the Next.js development server with Turbopack.
+build: Builds the application for production.
+start: Starts the production server.
+lint: Runs ESLint for code quality checks.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Backend Scripts
+Ensure you have the necessary scripts in your backend package.json for starting the server.
 
-## Learn More
+Frontend Dependencies
+Next.js: A React framework for server-rendered applications.
+React: A JavaScript library for building user interfaces.
+React DOM: Provides DOM-specific methods for React.
+CORS: Middleware for enabling CORS in Express applications.
+Tailwind CSS: A utility-first CSS framework.
 
-To learn more about Next.js, take a look at the following resources:
+Backend Dependencies
+Express: A web framework for Node.js.
+Cookie-parser: Middleware for parsing cookies.
+Cors: Middleware for enabling CORS.
+Dotenv: Loads environment variables from a .env file.
+Jsonwebtoken: For creating and verifying JSON Web Tokens.
+Bcrypt: For hashing passwords.
+Prisma: An ORM for database interactions.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Environment Variables
+Create a .env file in the backend directory with the following variables:
+DB_URL="your_database_url"
+PORT=5000
+JWT_SECRET="your_secret_key"
+Replace your_database_url and your_secret_key with your actual database connection string and a secret key for JWT.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Feel free to replace `<repository-url>` and `<repository-directory>` with the actual details for your project!
