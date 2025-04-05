@@ -1,4 +1,4 @@
-# Reataurant management
+# Restaurant management
 
 ## Description
 
