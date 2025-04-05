@@ -50,12 +50,6 @@ const loginUser = async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        // ตรวจสอบ admin 123 โดยตรง
-        if (username === 'admin' && password === '123') {
-            return res.json({ success: true, role: 'ADMIN', redirectPath: '/admin' });
-        }
-
-        // ค้นหาผู้ใช้ในฐานข้อมูล (ถ้าไม่ใช่ admin 123)
         const user = await prisma.user.findUnique({
             where: { username },
         });
@@ -76,6 +70,8 @@ const loginUser = async (req, res) => {
             redirectPath = '/cashier';
         } else if (user.role === 'CHEF') {
             redirectPath = '/kitchen';
+        } else if (user.role === 'ADMIN') {
+            redirectPath = '/admin'; // Admin redirect path
         }
 
         // ส่งข้อมูลไปให้ frontend
@@ -91,17 +87,32 @@ const editRole = async (req, res) => {
     const { id } = req.params;
     const { role } = req.body;
 
+    if (!id || isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+    }
+    
+    if (!role) {
+        return res.status(400).json({ error: 'Role is required' });
+    }
+
     try {
         const updatedUser = await prisma.user.update({
             where: { id: Number(id) },
             data: { role: role.toUpperCase() },
         });
+
         res.json(updatedUser);
     } catch (error) {
         console.error('Error updating role:', error);
+        
+        if (error.code === 'P2025') { // Prisma Error: Record not found
+            return res.status(404).json({ error: 'User not found' });
+        }
+
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 // Delete employee
 const deleteEmployee = async (req, res) => {

@@ -58,6 +58,7 @@ model Table { // โมเดลสำหรับโต๊ะ
 }
 
 enum Role {
+  ADMIN
   CUSTOMER
   CHEF
   CASHIER

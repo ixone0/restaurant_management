@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 const Admin = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('KITCHEN');
+    const [role, setRole] = useState('CHEF');
     const [employees, setEmployees] = useState([]);
     const [error, setError] = useState('');
 
@@ -40,7 +40,7 @@ const Admin = () => {
                 setEmployees((prev) => [...prev, data]);
                 setUsername('');
                 setPassword('');
-                setRole('KITCHEN');
+                setRole('CHEF');
             } else {
                 setError(data.error || 'Failed to register employee');
             }
@@ -56,19 +56,22 @@ const Admin = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ role: newRole }),
             });
-
-            if (response.ok) {
-                const updatedEmployee = await response.json();
-                setEmployees((prev) =>
-                    prev.map((emp) => (emp.id === employeeId ? updatedEmployee : emp))
-                );
-            } else {
-                setError('Failed to update role');
+    
+            const data = await response.json();
+    
+            if (!response.ok) {
+                setError(data.error || 'Failed to update role');
+                return;
             }
+    
+            setEmployees((prev) =>
+                prev.map((emp) => (emp.id === employeeId ? data : emp))
+            );
         } catch (error) {
             setError('Error updating role');
         }
     };
+    
 
     const handleDeleteEmployee = async (employeeId) => {
         const confirmed = window.confirm('Are you sure you want to delete this employee?');
@@ -115,7 +118,7 @@ const Admin = () => {
                         onChange={(e) => setRole(e.target.value)}
                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                     >
-                        <option value="KITCHEN">Chef</option>
+                        <option value="CHEF">Chef</option>
                         <option value="CASHIER">Cashier</option>
                     </select>
                     <button
@@ -141,7 +144,7 @@ const Admin = () => {
                                     onChange={(e) => handleEditRole(employee.id, e.target.value)}
                                     className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <option value="KITCHEN">Chef</option>
+                                    <option value="CHEF">Chef</option>
                                     <option value="CASHIER">Cashier</option>
                                 </select>
                                 <button
