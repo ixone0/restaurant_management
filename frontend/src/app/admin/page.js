@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from "next/navigation";
 
 const Admin = () => {
     const [username, setUsername] = useState('');
@@ -8,11 +9,28 @@ const Admin = () => {
     const [role, setRole] = useState('CHEF');
     const [employees, setEmployees] = useState([]);
     const [error, setError] = useState('');
+    const [token, setToken] = useState(null);
+    const router = useRouter();
+
+    // Fetch token from localStorage
+    useEffect(() => {
+        const storedToken = localStorage.getItem('token');
+        setToken(storedToken);
+        if (!storedToken) {
+          router.push('/login'); // เปลี่ยนเส้นทางไปยังหน้า Login ถ้าไม่มี token
+          return;
+        }
+    }, []);
 
     useEffect(() => {
+        if (!token) return; // ถ้าไม่มี token ให้ไม่ทำอะไร
         const fetchEmployees = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/users/getEmployees');
+                const response = await fetch('http://localhost:5000/api/users/getEmployees', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 const data = await response.json();
                 if (response.ok) {
                     setEmployees(data);
@@ -24,7 +42,7 @@ const Admin = () => {
             }
         };
         fetchEmployees();
-    }, []);
+    }, [token]);
 
     const handleRegister = async () => {
         try {
@@ -53,7 +71,10 @@ const Admin = () => {
         try {
             const response = await fetch(`http://localhost:5000/api/users/editRole/${employeeId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // ส่ง token ใน header
+                },
                 body: JSON.stringify({ role: newRole }),
             });
     
@@ -80,6 +101,9 @@ const Admin = () => {
         try {
             const response = await fetch(`http://localhost:5000/api/users/deleteEmployee/${employeeId}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // ส่ง token ใน header
+                },
             });
 
             if (response.ok) {

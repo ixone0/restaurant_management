@@ -22,15 +22,26 @@ export default function Login() {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
+      // Check if the response is JSON
+      const contentType = response.headers.get('Content-Type');
+      let data;
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const errorText = await response.text(); // Handle plain text response
+        throw new Error(errorText);
+      }
 
-      if (response.ok && data.success) {
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role); // Store the role in localStoragec
+        console.log(localStorage.getItem('token'));
         router.push(data.redirectPath);
       } else {
         setError(data.message || 'Invalid username or password');
       }
     } catch (error) {
-      setError('Something went wrong. Please try again later.');
+      setError(error.message || 'Something went wrong. Please try again later.');
     }
   };
 

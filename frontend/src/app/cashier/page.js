@@ -7,20 +7,42 @@ import Head from 'next/head';
 const Cashier = () => {
   const [unpaidOrders, setUnpaidOrders] = useState([]);
   const router = useRouter();
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const fetchUnpaidOrders = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/cashier/unpaid");
-        const data = await response.json();
-        const ordersArray = Object.values(data).flat();
-        setUnpaidOrders(ordersArray);
-      } catch (error) {
-        console.error("Error fetching unpaid orders:", error);
-      }
-    };
-    fetchUnpaidOrders();
+    const storedToken = localStorage.getItem('token');
+    setToken(storedToken);
+    if (!storedToken) {
+      router.push('/login');
+      return;
+    }
   }, []);
+
+  // Fetch unpaid orders
+  useEffect(() => {
+    if (token) {
+      const fetchUnpaidOrders = async () => {
+        try {
+          const response = await fetch("http://localhost:5000/api/cashier/unpaid", {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const ordersArray = Object.values(data).flat();
+          setUnpaidOrders(ordersArray);
+        } catch (error) {
+          console.error("Error fetching unpaid orders:", error);
+        }
+      };
+      fetchUnpaidOrders();
+    }
+  }, [token]);
 
   const handlePayment = async (tableNumber) => {
     const confirmed = window.confirm(`Confirm payment for Table ${tableNumber}?`);
@@ -28,10 +50,13 @@ const Cashier = () => {
       try {
         const response = await fetch("http://localhost:5000/api/cashier/payment", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify({ tableNumber }),
         });
-  
+
         if (response.ok) {
           const { updatedOrders } = await response.json();
           setUnpaidOrders((prevOrders) =>
@@ -55,48 +80,54 @@ const Cashier = () => {
         
     const confirmed = window.confirm(confirmMessage);
     if (confirmed) {
-        const newQuantity = operation === "increase" 
-            ? quantity + 1 
-            : quantity - 1;
+      const newQuantity = operation === "increase" ? quantity + 1 : quantity - 1;
 
-        try {
-            const response = await fetch("http://localhost:5000/api/cashier/update-item-quantity", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    orderId,
-                    itemId,
-                    newQuantity,
-                }),
+      try {
+        const response = await fetch("http://localhost:5000/api/cashier/update-item-quantity", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            orderId,
+            itemId,
+            newQuantity,
+          }),
+        });
+
+        if (response.ok) {
+          const updatedItem = await response.json();
+          setUnpaidOrders((prevOrders) => {
+            return prevOrders.map((order) => {
+              if (order.id === orderId) {
+                return {
+                  ...order,
+                  items: order.items.map((item) => {
+                    if (item.id === itemId) {
+                      return { ...item, quantity: newQuantity };
+                    }
+                    return item;
+                  }),
+                };
+              }
+              return order;
             });
-
-            if (response.ok) {
-                const updatedItem = await response.json();
-                setUnpaidOrders((prevOrders) => {
-                    return prevOrders.map((order) => {
-                        if (order.id === orderId) {
-                            return {
-                                ...order,
-                                items: order.items.map((item) => {
-                                    if (item.id === itemId) {
-                                        return { ...item, quantity: newQuantity };
-                                    }
-                                    return item;
-                                }),
-                            };
-                        }
-                        return order;
-                    });
-                });
-            } else {
-                alert("Failed to update item quantity.");
-            }
-        } catch (error) {
-            console.error("Error updating item quantity:", error);
-            alert("Error updating item quantity.");
+          });
+        } else {
+          alert("Failed to update item quantity.");
         }
+      } catch (error) {
+        console.error("Error updating item quantity:", error);
+        alert("Error updating item quantity.");
+      }
     }
-};
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // ลบ token
+    router.push('/login'); // เปลี่ยนเส้นทางไปยังหน้า Login
+  };
 
   const groupedOrders = unpaidOrders.reduce((acc, order) => {
     const tableNumber = order.table?.number || "Unknown";
@@ -113,16 +144,24 @@ const Cashier = () => {
         <title>Cashier</title>
       </Head>
       <h2 className="text-2xl font-bold text-center mb-6">Check Orders</h2>
-      <button
-        onClick={() => router.push("/paidorders")}
-        className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mb-4"
-      >
-        Order History
-      </button>
+      <div className="flex justify-between mb-4">
+        <button
+          onClick={() => router.push("/paidorders")}
+          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mb-4"
+        >
+          Order History
+        </button>
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 mb-4"
+        >
+          Log Out
+        </button>
+        
+      </div>
       <div className="space-y-4">
         {Object.keys(groupedOrders).length > 0 ? (
           Object.entries(groupedOrders).map(([tableNumber, orders]) => {
-            // คำนวณ total price จากข้อมูลใน frontend
             const totalTablePrice = orders.reduce((total, order) => {
               return total + order.items.reduce((itemTotal, item) => {
                 return itemTotal + item.quantity * item.menu.price;

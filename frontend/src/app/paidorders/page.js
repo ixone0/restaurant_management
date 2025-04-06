@@ -7,12 +7,17 @@ import Head from 'next/head';
 const Paidorders = () => {
   const [paidOrders, setPaidOrders] = useState([]);
   const router = useRouter();
+  const token = localStorage.getItem('token'); // ดึง token จาก localStorage
 
   // Fetch paid orders
   useEffect(() => {
     const fetchPaidOrders = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/cashier/paid");
+        const response = await fetch("http://localhost:5000/api/cashier/paid", {
+          headers: {
+            'Authorization': `Bearer ${token}`, // ส่ง token ใน header
+          }
+        });
         const data = await response.json();
         const ordersArray = Object.values(data).flat();
         setPaidOrders(ordersArray);
@@ -21,7 +26,7 @@ const Paidorders = () => {
       }
     };
     fetchPaidOrders();
-  }, []);
+  }, [token]);
 
   // Sort and group orders
   const sortedOrders = paidOrders.sort((a, b) => new Date(b.paidAt) - new Date(a.paidAt));

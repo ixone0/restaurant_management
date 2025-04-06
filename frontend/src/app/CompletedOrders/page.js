@@ -6,34 +6,61 @@ import { useRouter } from "next/navigation";
 const CompletedOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
   const router = useRouter();
 
+  // Fetch token from localStorage
   useEffect(() => {
-    fetch('http://localhost:5000/api/kitchen')
-      .then((response) => response.json())
-      .then((data) => {
-        // Filter to get only completed orders
+    const storedToken = localStorage.getItem('token');
+    setToken(storedToken);
+    if (!storedToken) {
+      router.push('/login'); // เปลี่ยนเส้นทางไปยังหน้า Login ถ้าไม่มี token
+      return;
+    }
+  }, []);
+
+  // Fetch completed orders
+  useEffect(() => {
+    const fetchCompletedOrders = async () => {
+      if (!token) return;
+
+      try {
+        const response = await fetch('http://localhost:5000/api/kitchen', {
+          headers: {
+            'Authorization': `Bearer ${token}`, // ส่ง token ใน header
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText);
+        }
+
+        const data = await response.json();
         const completedOrders = data.filter(order => order.status === 'COMPLETED');
         setOrders(completedOrders);
         setLoading(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Error fetching completed orders:', error);
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+    fetchCompletedOrders();
+  }, [token]);
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       const response = await fetch(`http://localhost:5000/api/kitchen/${orderId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // ส่ง token ใน header
+        },
         body: JSON.stringify({ status: newStatus }),
       });
 
-      const updatedOrder = await response.json();
-
       if (!response.ok) {
+        const updatedOrder = await response.json();
         throw new Error(updatedOrder.message || 'Failed to update order');
       }
 

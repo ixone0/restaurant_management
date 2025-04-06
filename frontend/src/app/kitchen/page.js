@@ -6,23 +6,48 @@ import { useRouter } from "next/navigation";
 const Kitchen = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
   const router = useRouter();
 
+  // Fetch token from localStorage
   useEffect(() => {
-    fetch('http://localhost:5000/api/kitchen')
-      .then((response) => response.json())
-      .then((data) => {
-        setOrders(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching orders:', error);
-        setLoading(false);
-      });
+    const storedToken = localStorage.getItem('token');
+    setToken(storedToken);
+    if (!storedToken) {
+      router.push('/login'); // เปลี่ยนเส้นทางไปยังหน้า Login ถ้าไม่มี token
+      return;
+    }
   }, []);
 
+  // Fetch orders
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!token) return;
+
+      try {
+        const response = await fetch('http://localhost:5000/api/kitchen', {
+          headers: {
+            'Authorization': `Bearer ${token}`, // ส่ง token ใน header
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText);
+        }
+
+        const data = await response.json();
+        setOrders(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [token]);
+
   const updateOrderStatus = async (orderId, newStatus) => {
-    // Confirm before updating to COMPLETED
     if (newStatus === 'COMPLETED') {
       const confirmed = window.confirm('Are you sure you want to mark this order as completed?');
       if (!confirmed) return;
@@ -31,13 +56,15 @@ const Kitchen = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/kitchen/${orderId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // ส่ง token ใน header
+        },
         body: JSON.stringify({ status: newStatus }),
       });
 
-      const updatedOrder = await response.json();
-
       if (!response.ok) {
+        const updatedOrder = await response.json();
         throw new Error(updatedOrder.message || 'Failed to update order');
       }
 
@@ -53,23 +80,31 @@ const Kitchen = () => {
   };
 
   const deleteOrder = async (orderId) => {
-  const confirmed = window.confirm('Are you sure you want to delete this order?');
-  if (!confirmed) return;
+    const confirmed = window.confirm('Are you sure you want to delete this order?');
+    if (!confirmed) return;
 
-  try {
-    const response = await fetch(`http://localhost:5000/api/kitchen/${orderId}`, {
-      method: 'DELETE',
-    });
+    try {
+      const response = await fetch(`http://localhost:5000/api/kitchen/${orderId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`, // ส่ง token ใน header
+        },
+      });
 
-    if (response.ok) {
-      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId));
-    } else {
-      console.error('Failed to delete order');
+      if (response.ok) {
+        setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId));
+      } else {
+        console.error('Failed to delete order');
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
     }
-  } catch (error) {
-    console.error('Error deleting order:', error);
-  }
-};
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // ลบ token
+    router.push('/login'); // เปลี่ยนเส้นทางไปยังหน้า Login
+  };
 
   if (loading) return <p className="text-center text-lg">Loading orders...</p>;
 
@@ -81,12 +116,21 @@ const Kitchen = () => {
       <h2 className="text-center font-bold text-2xl text-blue-500 mb-6 mt-8">
         Orders Awaiting Preparation
       </h2>
-      <button
-        onClick={() => router.push("/CompletedOrders")}
-        className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mb-4"
-      >
-        Completed Orders
-      </button>
+      <div className="flex justify-between mb-4">
+        <button
+          onClick={() => router.push("/CompletedOrders")}
+          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+        >
+          Completed Orders
+        </button>
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+        >
+          Log Out
+        </button>
+        
+      </div>
       <div>
         {pendingOrders.map((order) => (
           <div key={order.id} className="mb-4 p-4 border border-gray-300 rounded-lg shadow-md bg-white">
@@ -118,12 +162,6 @@ const Kitchen = () => {
                   </button>
                 ))}
               </div>
-              <button
-                className="ml-auto bg-red-600 text-white py-2 px-4 rounded focus:outline-none cursor-pointer hover:bg-red-700 active:bg-red-800 transition duration-200"
-                onClick={() => deleteOrder(order.id)}
-              >
-                Delete
-              </button>
             </div>
           </div>
         ))}

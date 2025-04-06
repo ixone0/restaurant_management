@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const cashierController = require('../controllers/cashierController');
+const { authenticateToken, authorizeRole } = require('../middleware/authMiddleware'); 
 
 // กำหนดเส้นทาง
-router.get('/', cashierController.getCashiers);
-router.put('/orders/:id', cashierController.updateOrderStatus); // เพิ่มเส้นทางสำหรับแก้ไขสถานะคำสั่งซื้อ
-router.delete('/orders/:id', cashierController.deleteOrder); // เพิ่มเส้นทางสำหรับลบคำสั่งซื้อ
-router.post('/payment', cashierController.processPayment)
-router.get('/unpaid', cashierController.getUnpaidOrders)
-router.get('/paid', cashierController.getPaidOrders)
-router.patch('/update-item-quantity', cashierController.updateItemQuantity); // เพิ่มเส้นทางสำหรับอัพเดตจำนวนสินค้าในคำสั่งซื้อ
+router.put('/orders/:id', authenticateToken, authorizeRole(['CASHIER', 'ADMIN']), cashierController.updateOrderStatus);
+router.delete('/orders/:id', authenticateToken, authorizeRole(['CASHIER', 'ADMIN']), cashierController.deleteOrder);
+router.post('/payment', authenticateToken, authorizeRole(['CASHIER']), cashierController.processPayment);
+router.get('/unpaid', authenticateToken, authorizeRole(['CASHIER']), cashierController.getUnpaidOrders);
+router.get('/paid', authenticateToken, authorizeRole(['CASHIER']), cashierController.getPaidOrders);
+router.patch('/update-item-quantity', authenticateToken, authorizeRole(['CASHIER']), cashierController.updateItemQuantity);
 
 module.exports = router;
