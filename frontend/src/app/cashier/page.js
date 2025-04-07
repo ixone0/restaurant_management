@@ -3,11 +3,13 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Head from 'next/head';
+import jwtDecode from 'jwt-decode';
 
 const Cashier = () => {
   const [unpaidOrders, setUnpaidOrders] = useState([]);
-  const router = useRouter();
   const [token, setToken] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -21,6 +23,7 @@ const Cashier = () => {
   // Fetch unpaid orders
   useEffect(() => {
     if (token) {
+      
       const fetchUnpaidOrders = async () => {
         try {
           const response = await fetch("http://localhost:5000/api/cashier/unpaid", {
@@ -35,7 +38,13 @@ const Cashier = () => {
 
           const data = await response.json();
           const ordersArray = Object.values(data).flat();
+          const decodedToken = jwtDecode(token); // ใช้ jwtDecode
+          if (decodedToken.role === 'ADMIN') {
+            setIsAdmin(true);
+          }
           setUnpaidOrders(ordersArray);
+
+          
         } catch (error) {
           console.error("Error fetching unpaid orders:", error);
         }
@@ -151,6 +160,14 @@ const Cashier = () => {
         >
           Order History
         </button>
+        {/* ปุ่มไปยังหน้า /admin หากเป็น ADMIN */}
+        {isAdmin && (
+          <button 
+          onClick={() => router.push("/admin")}
+          className="bg-black text-white py-2 px-4 rounded hover:bg-gray-700 mb-4">
+            Admin Panel
+          </button>
+        )}
         <button
           onClick={handleLogout}
           className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 mb-4"

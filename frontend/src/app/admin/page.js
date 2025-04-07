@@ -20,6 +20,7 @@ const Admin = () => {
           router.push('/login'); // เปลี่ยนเส้นทางไปยังหน้า Login ถ้าไม่มี token
           return;
         }
+        console.log('Token:', storedToken); // แสดง token ใน console
     }, []);
 
     useEffect(() => {
@@ -115,12 +116,37 @@ const Admin = () => {
             setError('Error deleting employee');
         }
     };
+    
+    const handleLogout = () => {
+        localStorage.removeItem('token'); // ลบ token
+        router.push('/login'); // เปลี่ยนเส้นทางไปยังหน้า Login
+      };
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-50 p-6">
             <div className="bg-white shadow-xl rounded-lg p-8 w-full max-w-lg border border-gray-200">
                 <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">Admin Management</h2>
-
+                <div className="flex justify-between mb-4">
+                    <button
+                        onClick={() => router.push("/cashier")}
+                        className="bg-black text-white py-2 px-4 rounded hover:bg-gray-700 mb-4"
+                        >
+                        To Cashier
+                    </button>
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 mb-4"
+                        >
+                        Log Out
+                    </button>
+                    <button
+                        onClick={() => router.push("/kitchen")}
+                        className="bg-black text-white py-2 px-4 rounded hover:bg-gray-700 mb-4"
+                        >
+                        To Kitchen
+                    </button>
+                    
+                </div>
                 <h3 className="text-xl font-medium text-gray-700 mb-3">Register Employee</h3>
                 <div className="space-y-3">
                     <input

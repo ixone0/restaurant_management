@@ -2,11 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
+import jwtDecode from 'jwt-decode';
 
 const Kitchen = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   // Fetch token from localStorage
@@ -37,6 +39,10 @@ const Kitchen = () => {
         }
 
         const data = await response.json();
+        const decodedToken = jwtDecode(token); // ใช้ jwtDecode
+          if (decodedToken.role === 'ADMIN') {
+            setIsAdmin(true);
+          }
         setOrders(data);
         setLoading(false);
       } catch (error) {
@@ -119,13 +125,20 @@ const Kitchen = () => {
       <div className="flex justify-between mb-4">
         <button
           onClick={() => router.push("/CompletedOrders")}
-          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mb-4"
         >
           Completed Orders
         </button>
+        {isAdmin && (
+          <button 
+          onClick={() => router.push("/admin")}
+          className="bg-black text-white py-2 px-4 rounded hover:bg-gray-700 mb-4">
+            Admin Panel
+          </button>
+        )}
         <button
           onClick={handleLogout}
-          className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+          className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 mb-4"
         >
           Log Out
         </button>
