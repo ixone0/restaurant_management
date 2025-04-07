@@ -2,7 +2,7 @@
 
 ## Description
 
-This project consists of a frontend built with Next.js and a backend using Express.js. It provides a simple interface for managing employees with authentication and role management.
+This project features a frontend developed with Next.js and a backend powered by Express.js. It offers a user-friendly interface for managing employees, complete with authentication and role-based access control (RBAC). The backend is built using PostgreSQL for data storage, and JSON Web Tokens (JWT) are utilized for secure authentication and authorization, ensuring that users have the appropriate access based on their roles.
 
 ## Table of Contents
 
