@@ -44,6 +44,7 @@ model Menu {
   name        String   // ชื่อเมนู
   description String?  // รายละเอียดของเมนู
   price       Float    // ราคา
+  cost        Float
   category    String?  
   available   Boolean  @default(true)
   imageUrl    String?  
